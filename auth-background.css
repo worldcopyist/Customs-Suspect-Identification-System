@@ -1,0 +1,20 @@
+.auth-visual {
+  background: linear-gradient(180deg, rgba(0, 24, 61, .2), rgba(0, 24, 61, .56)),
+    url("./assets/auth-customs-gate.png") center / cover no-repeat;
+}
+
+.auth-visual::before {
+  background: linear-gradient(90deg, rgba(0, 20, 53, .18), rgba(0, 20, 53, .04));
+  background-size: auto;
+  transform: none;
+  opacity: 1;
+}
+
+.auth-visual > * {
+  z-index: 1;
+}
+
+/* 背景图已包含闸机，移除旧版叠加的三根柱体装饰。 */
+.auth-visual .gate {
+  display: none;
+}
