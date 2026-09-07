@@ -216,6 +216,19 @@ Do not change `APP_SECRET_KEY` in an existing installation without a backup and 
 - Verification: 2026-09-07 source-link and ledger-ID checks passed; the English handbook contains ASCII text only; `npm run check` passed. No full business test suite was re-run because this change only adds documentation.
 - Rollback: remove only the four documentation files in a future version-control commit; no data rollback is required.
 
+### CHG-0012 - GitHub CLI installation and initial repository publication
+
+- Status: `COMPLETED on 2026-09-07`
+- Request/problem: publish the local project to `worldcopyist/Customs-Suspect-Identification-System` after direct Git HTTPS push lacked a usable credential.
+- Facts and constraints: the GitHub connector confirmed administrative push permission, but its exposed API did not provide a lossless local-workspace upload primitive for the repository's binary assets. The remote initially contained only commit `31f8015` and a root `LICENSE`. The local repository had no earlier commits.
+- Work performed: installed GitHub CLI 2.100.0 for macOS arm64 from the official release after matching the published SHA-256 checksum; configured Git to use the authenticated CLI credential helper; preserved and merged the remote `LICENSE`; pushed the existing merge commit without force.
+- Result: `main` advanced from `31f8015` to `a531734d2fdfa6c08d2da9275f45d6990f9a5ee1`. The project commit is `bc9683859eb77edcaca133725061ced8afa5de97`; the merge commit retains the remote initial history.
+- Affected files: no runtime source, database, media, model, or secret file was changed by the installation/push. This ledger entry and its Chinese counterpart are the only project-file changes for this record.
+- Verification: GitHub CLI reported the authenticated `worldcopyist` account; non-force push completed; GitHub commit query and local `origin/main` both resolved to `a531734d2fdfa6c08d2da9275f45d6990f9a5ee1`.
+- Security: no token value is stored in the repository or this document. The local CLI credential is held by the operating-system credential store.
+- Rollback: remove a future repository commit only after evaluating collaborators and history; do not force-push or delete the remote branch merely to undo this publication.
+- Chinese counterpart: `docs/DEVELOPMENT_HISTORY_ZH.md#chg-0012`
+
 ## 9. Open work register
 
 | ID | Status | Work | Required evidence before closure |
