@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>系统启动动画</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: #020b18 url('/assets/startup-animation/background.jpeg') center / cover no-repeat; }
+    h1 {
+      width: 100%; height: 100%; margin: 0; display: grid; place-items: center;
+      font: 700 clamp(2.25rem, 11vw, 9rem) / 1.1 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      letter-spacing: .12em; color: transparent;
+      background: linear-gradient(120deg, #fff, #74d7ff 38%, #fff 64%, #99c9ff) center / cover;
+      -webkit-background-clip: text; background-clip: text;
+      text-shadow: 0 0 30px #4bbaff44;
+      animation: animator 3s ease-out both;
+    }
+    @keyframes animator { from { transform: scale(7); opacity: .1; } to { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body><h1>海关视觉智能识别系统</h1></body>
+</html>

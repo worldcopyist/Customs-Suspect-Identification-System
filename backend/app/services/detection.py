@@ -219,9 +219,9 @@ def render_detection(db, detection, settings=None):
         font=ImageFont.load_default(size=max(12,min(22,picture.width//40)))
         for box in detection.boxes:
             draw.rectangle(box.bbox,outline="red",width=3)
-            draw.text((box.bbox[0],max(0,box.bbox[1]-20)),f"sus {box.confidence:.3f}",fill="red",font=font)
-        # Local font is optional; English fallback always preserves the training label.
-        label="TRAINING DATA / 实训数据"
+            draw.text((box.bbox[0],max(0,box.bbox[1]-20)),f"{box.class_name} {box.confidence:.3f}",fill="red",font=font)
+        # Local font is optional; English fallback always preserves the demo label.
+        label="ENTERPRISE DEMO / 业务数据"
         for path in ("/System/Library/Fonts/PingFang.ttc","C:/Windows/Fonts/msyh.ttc","/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"):
             if Path(path).is_file():font=ImageFont.truetype(path,max(12,min(20,picture.width//40)));break
         lines=[label,f"{owner.username} | {detection.finished_at.isoformat()}",detection.id]

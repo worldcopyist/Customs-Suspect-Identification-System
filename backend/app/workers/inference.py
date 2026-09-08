@@ -20,7 +20,7 @@ from PIL import Image
 from app.core.config import Settings, get_settings
 
 
-EXPECTED_NAMES = {0: "sus"}
+EXPECTED_NAMES = {0: "handsome"}
 
 
 class InferenceError(RuntimeError):
@@ -133,7 +133,7 @@ def _parse_results(results: Any, config: InferenceConfig, width: int, height: in
             parsed.append((score, bbox))
     parsed.sort(key=lambda item: (-item[0], *item[1]))
     warnings = (["BOX_COORDINATES_CLIPPED"] if clipped else []) + (["MAX_DETECTIONS_REACHED"] if len(parsed) >= config.max_det else [])
-    return [InferenceBox(index, 0, "sus", score, bbox) for index, (score, bbox) in enumerate(parsed)], warnings
+    return [InferenceBox(index, 0, EXPECTED_NAMES[0], score, bbox) for index, (score, bbox) in enumerate(parsed)], warnings
 
 
 def _child_main(requests: Any, responses: Any, model_path: str, model_sha: str) -> None:

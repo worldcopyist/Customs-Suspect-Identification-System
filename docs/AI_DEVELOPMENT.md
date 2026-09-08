@@ -22,19 +22,21 @@ Never rely only on screenshots, a health endpoint, a historical note, an unmount
 
 | Source | Role | Version/date | Integrity snapshot on 2026-09-07 |
 | --- | --- | --- | --- |
-| [Product Requirements Document](../day4_1_%23fcosbrk_%E5%88%98%E7%9D%BF_%E6%96%87%E6%A1%A3/PRD.md) | Product scope, roles, acceptance criteria | V1.2, 2026-09-05 | SHA-256 `ce2ae7e3c9726ef12d96ea3e37bfa6173c26a874b8333d6856f892273501d10e` |
-| [API Contract](../day4_1_%23fcosbrk_%E5%88%98%E7%9D%BF_%E6%96%87%E6%A1%A3/%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3.md) | REST, WebSocket, error, state, and permission contract | 1.1, 2026-09-05 | SHA-256 `06dfb372201f9c04dbe2b72fa5b93a23bcbbce03d5f4fd6a16a67ef82809bf31` |
-| [Architecture Design](../day4_1_%23fcosbrk_%E5%88%98%E7%9D%BF_%E6%96%87%E6%A1%A3/%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88.md) | Intended architecture and deployment constraints | 1.1, 2026-09-05 | SHA-256 `2291a49f4338752b141bf3b8660e11a597875fae65f55f1e14dfa892941c96a8` |
-| [AI Technical Design](../day4_1_%23fcosbrk_%E5%88%98%E7%9D%BF_%E6%96%87%E6%A1%A3/AI%E6%8A%80%E6%9C%AF%E6%96%B9%E6%A1%88.md) | Detection, cloud text, safety, and avatar boundaries | 1.1, 2026-09-05 | SHA-256 `3e0bec04f8de6c63dd8ec735f178e270badc4a49618b4e3ff297fcffe22ff390` |
-| `docs/V1.2_IMPLEMENTATION.md` | Dated implementation and verification record | updated 2026-09-07 | Current status, not a requirements replacement |
+| Product Requirements Document | Product scope, roles, acceptance criteria | V1.2 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `63cac1c7f5cc991f0c7e3cf80caf329f03fd815778f88e24d9bdeb7dc2969ac9` |
+| API Contract | REST, WebSocket, error, state, and permission contract | 1.1 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `95a3f0254014d450e05a9a80f1d30988b49c76ee1d225138ce307d512134fc6a` |
+| Architecture Design | Intended architecture and deployment constraints | 1.1 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `7d60175badfcf21dfd942cb47e75067d1ade6076a16ebfb7c59ac478e2e643b6` |
+| AI Technical Design | Detection, cloud text, safety, and avatar boundaries | 1.1 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `253f968fc41514ecaa5575023971a46e0bfd4ea354dba02445f20ec368071111` |
+| `docs/V1.2_IMPLEMENTATION.md` | Dated implementation and verification record | updated 2026-09-08 | Current status, not a requirements replacement |
 | `docs/IMPLEMENTATION_BOUNDARIES.md` | Module-to-source map and implementation limits | updated 2026-09-07 | Current status, not a requirements replacement |
 | `backend/README.md` | Runtime, backup, dependency, and safety operations | V1.2 | Operational instructions |
 
-If any primary file changes, update the date and SHA-256 here and re-evaluate entries that depend on it.
+The controlled sources are intentionally not in the repository. Before a change that depends on them, request authorized local access from the project owner and compare the delivered file hashes with this register. If any primary file changes, update the date and SHA-256 here and re-evaluate entries that depend on it.
+
+The above hashes include the 2026-09-07 CHG-0014 enterprise branding and theme addendum and the 2026-09-08 CHG-0015 model/animation addendum. Earlier educational branding and the historical `sus` model statements in the original body are superseded only where those addenda say so, not by a change in review or authorization boundaries.
 
 ## 4. Non-negotiable system boundaries
 
-- The local YOLO model returns only `sus` candidate boxes. It does not identify a person, estimate criminal probability, deduplicate people, track across cameras, or make an enforcement decision.
+- The current local YOLO model returns only `handsome` candidate boxes. The model-defined class is not an identity or an appearance assessment. It does not identify a person, estimate criminal probability, deduplicate people, track across cameras, or make an enforcement decision. Historical `sus` boxes remain historical records.
 - Person links are manual, permission-checked associations. A retained review is not a confirmed identity or a legal conclusion.
 - Do not send images, camera frames, or internal chat content to a cloud model. Cloud text requires an exact prepared preview and explicit confirmation.
 - Do not add arbitrary model upload, web-managed YOLO weights, threshold edits, automatic vendor fallback, automatic cloud retries, speech, chat attachments, full private-chat audit, or external-network messaging unless requirements are explicitly changed first.
@@ -61,7 +63,7 @@ SQLite + controlled local media + one local YOLO worker path
 
 - Frontend: native JavaScript ES modules. The architecture design specifies Vue 3, Vite, Vue Router, Pinia, and Element Plus, but those are **not** the current implementation. Do not claim architecture parity.
 - Backend: Python/FastAPI/SQLAlchemy/Alembic with SQLite. Migrations are in `backend/migrations/versions/` through `20260905_0006_v12.py`.
-- Frontend entry is `index.html` -> `frontend.js` -> `ui/core.js`, `ui/detection.js`, `ui/chat.js`, `ui/assistant.js`, and `ui/admin.js`. Legacy `app.js`, `app-live.js`, and style files remain on disk but are not the served entry path.
+- Frontend entry is `index.html` -> `frontend.js` -> `ui/core.js`, `ui/detection.js`, `ui/chat.js`, `ui/assistant.js`, and `ui/admin.js`. Anonymous boot plays two static, sandboxed `/ui/intro/` pages before the login view; authenticated boot does not. Legacy `app.js`, `app-live.js`, and style files remain on disk but are not the served entry path.
 - Current verified development URL is `http://127.0.0.1:8000/`. It deliberately binds to loopback in the documented launch command.
 - `backend/data/`, `backend/media/`, `backend/logs/`, `backend/.venv/`, `.env`, and `node_modules/` are ignored by Git. They must not be committed as a convenience.
 
@@ -229,7 +231,65 @@ Do not change `APP_SECRET_KEY` in an existing installation without a backup and 
 - Rollback: remove a future repository commit only after evaluating collaborators and history; do not force-push or delete the remote branch merely to undo this publication.
 - Chinese counterpart: `docs/DEVELOPMENT_HISTORY_ZH.md#chg-0012`
 
+### CHG-0013 - Repository privacy exclusions and publication audit
+
+- Status: `COMPLETED on 2026-09-07`
+- Date: 2026-09-07
+- Request/problem: stop publishing the user-designated local design, source-document, and archive paths; audit the current publishable tree for personal names, tokens, API credentials, and related private material.
+- Requirement references: explicit user request on 2026-09-07; this repository handbook sections 3, 4, and 8.
+- Facts, hypotheses, and missing information: `origin/main` and the local `master` head both resolved to `4ba58e3` before this work. The requested paths are currently tracked. Removing them from the index prevents future tree publication but does not erase objects, file names, or contents already present in Git history. History rewrite and force push are out of scope without explicit approval.
+- Root cause or reasoned conclusion: `.gitignore` does not affect paths already tracked by Git. Current documentation also linked to a requested-to-exclude source directory, so those links must be replaced by controlled-source references.
+- Work performed, in order: added root-anchored ignore rules without personal names; removed 24 requested tracked items from the Git index with `git rm -r --cached` while confirming all local paths remain present; replaced public links to the controlled sources with source-register references; scanned the staged publishable tree and all reachable history for common live credential signatures; checked current PNG metadata fields without exposing metadata values.
+- Affected files, routes, data, permissions, and security boundaries: Git tracking rules and maintenance documents only. Local source documents and visual assets must remain on disk. No runtime route, database, account, credential, media, or model mutation is authorized.
+- Verification commands and actual results: `git fetch origin main`, remote comparison, and tracked-path inventory showed both heads at `4ba58e3` before work. `git check-ignore --no-index` matched all four requested path classes. The staged deletion count is 24 and the prohibited paths are absent from the current index. `git diff --cached --check` passed. No current-index or reachable-history match was found for the scanned GitHub, OpenAI-style, AWS, Google, Slack, or private-key signatures. The only credential-related source hits are expected configuration placeholders, application security code, documented initial/development credentials, and isolated test credentials; they are not evidence of a deployed secret. Neither retained PNG has Artist, Copyright, GPS, or UserComment EXIF fields. The handbook ASCII check and controlled-source link check passed.
+- Rollback or recovery: restore a future tracked-path change with `git restore --staged` before committing, or a later non-force commit after review. Do not delete local source material.
+- Remaining risks, external dependencies, and follow-up IDs: this is a pattern-based review, not a forensic or legal privacy certification. Current history still contains the excluded material and its historical paths; a history-rewrite decision requires explicit user authorization and collaborator impact assessment. A public deployment must replace the development application-key placeholder and documented/test passwords with managed secrets; that runtime security change is out of scope here.
+- Chinese counterpart: `docs/DEVELOPMENT_HISTORY_ZH.md#chg-0013`
+
+### CHG-0015 - Approved YOLO replacement and pre-login animation preview
+
+- Status: COMPLETED
+- Date: 2026-09-08
+- Request: deploy the user-supplied `/Users/Admin/Downloads/best.pt` in place of the current local YOLO weights, and present the supplied `animitor.html` and `xuanzhuan.html` as reversible startup animation before the anonymous login page.
+- Requirement references: explicit user request on 2026-09-08; controlled PRD AC-05, AC-06 and AC-26; architecture inference-worker boundary; AI-design detection output boundary.
+- Observed evidence and compatibility conclusion: the old approved artifact SHA-256 is `6f4a8baed78f970a5141cc43e356af8f68c8cef6e7e73ab376ea6893ed4a2b1a` and exposes `{0: "sus"}`. The supplied artifact SHA-256 is `d8387eb6ed98d6ff13013f8dc5b1eaac87cb243dc9aa8bc931adf2789abe9329`, loads as an Ultralytics `detect` task, and exposes `{0: "handsome"}`. The current strict worker rejects any changed class contract, so replacing only the binary would leave detection unavailable. The supplied HTML files are static but reference five same-directory `image/` assets; the user subsequently supplied that directory. Model loading proves format compatibility only, not accuracy, intended semantics, legal suitability, or real-camera performance.
+- Work performed: copied the five user-provided animation images to `assets/startup-animation/` with their recorded source fingerprints; preserved the old model in ignored `backend/models/backups/suspect-yolo11n-best-6f4a8baed78f.pt`; atomically installed the approved new artifact; updated the fixed SHA-256, one-class worker contract, box label rendering and assistant fact wording to `handsome`; added no model web-management API. Adapted the two static user HTML animations to same-origin asset paths and enterprise text, inserted a sandboxed sequence with a skip control before anonymous login, and made the CSP allow only `/ui/intro/` pages to be framed by the same origin. Updated the controlled-source addenda, README and implementation records.
+- Verification: direct Ultralytics load confirmed the configured artifact, `detect` task and exact names mapping, and completed a real synthetic-image prediction with zero boxes. The worker readiness hash check passed. `npm run check` passed, including the startup-resource/no-script/no-external-resource test. All 40 isolated backend tests passed with two upstream FastAPI/Starlette deprecation warnings. HTTP checks returned 200 for health, both animation HTML files and representative animation images, and exposed `frame-src 'self'`; browser checks visibly played both stages and then reached the anonymous login page. The first browser attempt failed because global `frame-ancestors 'none'` also blocked the sandboxed child page; the policy was narrowed for the two static intro pages and the browser recheck passed.
+- API/data/security effects: no route, schema, migration, account, or threshold change. New detection rows may contain `handsome`; old rows remain `sus`. Animation pages make no API call and are sandboxed; only their static paths use `frame-ancestors 'self'`, while all other responses retain `frame-ancestors 'none'`. Model and backup fingerprints are documented; the backup directory is ignored by Git.
+- Remaining work: no accuracy, bias, real-camera, physical-device, legal-source, or production suitability acceptance was performed. A user visual review remains the acceptance decision for the animations; revert only this change if it is not approved.
+- Boundaries: no account, database, source-media, provider credential, network bind address, automatic model training, or inference threshold change is authorized. Existing historical detection records retain their old `sus` class snapshots. The new `handsome` label remains a model candidate category, not a person identity, appearance judgment, criminal conclusion, or enforcement decision.
+- Rollback plan: restore the checksum-matched local backup and revert only the CHG-0015 source/assets; do not delete records created while the new model is active merely to roll back the executable artifact. Chinese counterpart: `docs/DEVELOPMENT_HISTORY_ZH.md#chg-0015`.
+
+### CHG-0016 - Publish current work and remove private paths from remote history
+
+- Status: IN_PROGRESS
+- Date: 2026-09-08
+- Request/problem: the user asked to upload the project to its GitHub repository, including only the files that are required to be uploaded. The user then explicitly authorized rewriting the published history and force-pushing so the CHG-0013 excluded paths (design screenshots, page materials, and the day4_1 source-document archive) no longer appear in any reachable commit.
+- Requirement references: explicit user requests on 2026-09-08; this handbook sections 3, 8 (CHG-0013 remaining risk), and the AGENTS.md force-push authority rule (satisfied by the direct user decision recorded in this session).
+- Facts, hypotheses, and missing information: before this work, local `master` and `origin/main` both resolved to `4ba58e3`. The working tree carried CHG-0014/CHG-0015 code, the approved model replacement, animation assets, staged CHG-0013 index removals, and eight previously untracked runtime files (theme, intro, check scripts, startup images). The five startup-animation images are referenced by the served `/ui/intro/` pages and are therefore required for the application to work; they are not among the user-excluded private paths.
+- Root cause or reasoned conclusion: CHG-0013 removed the private paths only from the index, so `bc96838` and later history still exposed them on GitHub. A history rewrite plus non-fast-forward update is the only in-repository way to remove them from the public view.
+- Work performed, in order: (planned) stage all publishable changes and commit; create a full local bundle backup; install git-filter-repo; rewrite all commits to drop the excluded path classes; verify the rewritten trees; force-push `main` with `--force-with-lease`; complete this ledger entry.
+- Affected files, routes, data, permissions, and security boundaries: version-control history and the local repository only. No runtime route, database, account, credential, media, or model mutation. Local copies of the excluded private paths remain on disk and stay ignored.
+- Verification commands and actual results: to be recorded on completion.
+- Rollback or recovery: the pre-rewrite bundle file restores the original history if the rewrite is rejected; the remote old objects may linger in GitHub caches until support cleanup, which is an accepted residual risk of any public-history rewrite.
+- Remaining risks, external dependencies, and follow-up IDs: force-push changes every commit ID; any other clone of the old history must re-clone. GitHub may keep cached views of removed content briefly.
+- Chinese counterpart: `docs/DEVELOPMENT_HISTORY_ZH.md#chg-0016`
+
 ## 9. Open work register
+### CHG-0014 - Theme selection and enterprise demo branding
+
+- Status: COMPLETED
+- Date: 2026-09-07
+- Request: light, dark and live system-following themes; replace educational branding with enterprise demo presentation.
+- Evidence: frontend.css hardcodes dark workspace and light authentication colors; UI and backend-generated text still carry educational labels.
+- Plan: initialize persistent browser theme before rendering, add a global selector, update product text and future generated watermarks, then verify isolated tests and browser behavior.
+- Boundaries: preserve database paths, existing media, credentials and historical ledger entries. This explicit request supersedes earlier educational branding; human review and identity limitations remain.
+- Work performed: added ui/theme.js before stylesheet loading and ui/theme.css for both appearances; global accessible select defaults to system, persists locally and synchronizes tabs. Updated UI, legacy mockup text, backend API title, assistant messages and future watermarks. Updated README, backend README, original controlled source addenda and hashes. Historical migration content, stored custom prompts, media and database identifiers remain unchanged.
+- Affected files: index.html, ui/theme.js, ui/theme.css, ui/core.js, ui/admin.js, ui/assistant.js, ui/detection.js, app.js, app-live.js, backend/app title and text-generation modules, scripts/check-theme.mjs, package.json and maintenance documents.
+- API/data effects: no new API or schema. Browser preference is device-local, not account-wide. Newly generated reports and images use enterprise wording; existing outputs remain historical artifacts.
+- Verification: 40 isolated backend tests passed (two dependency deprecation warnings); npm run check and theme event tests passed. Browser confirmed login/register theme selection, dark refresh persistence and computed light/dark panel colors. System-change and denied-storage paths were verified with an isolated event harness, not by changing the host OS. Authenticated workspace visual acceptance remains for user testing. Local service restarted on loopback with current code; health and static theme resources checked.
+- Rollback: revert only CHG-0014 edits; no data restoration needed. Chinese counterpart: docs/DEVELOPMENT_HISTORY_ZH.md.
+
 
 | ID | Status | Work | Required evidence before closure |
 | --- | --- | --- | --- |

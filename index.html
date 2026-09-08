@@ -3,12 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>海关视觉实训智能识别系统</title>
-  <link rel="stylesheet" href="./frontend.css?v=20260905-v12" />
+  <title>海关视觉智能识别系统 · 企业演示</title>
+  <script src="./ui/theme.js"></script>
+  <link rel="stylesheet" href="./frontend.css?v=20260907-theme" />
+  <link rel="stylesheet" href="./ui/theme.css?v=20260907" />
+  <link rel="stylesheet" href="./ui/intro.css?v=20260908" />
 </head>
 <body>
+  <label class="theme-control" for="theme-select">外观
+    <select id="theme-select" aria-label="选择主题">
+      <option value="system">跟随系统</option>
+      <option value="light">浅色模式</option>
+      <option value="dark">深色模式</option>
+    </select>
+  </label>
   <main id="app"></main>
   <div id="toast" aria-live="polite"></div>
-  <script type="module" src="./frontend.js?v=20260905-v12"></script>
+  <script type="module" src="./frontend.js?v=20260908-startup"></script>
 </body>
 </html>

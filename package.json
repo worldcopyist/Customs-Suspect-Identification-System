@@ -1,1 +1,1 @@
-{"name":"customs-training-ui","private":true,"type":"module","scripts":{"check":"node --check frontend.js && node scripts/check-ui.mjs","vendor":"node scripts/vendor.mjs"},"dependencies":{"three":"0.185.1"}}
+{"name":"customs-training-ui","private":true,"type":"module","scripts":{"check":"node --check frontend.js && node --check ui/intro.js && node scripts/check-ui.mjs && node scripts/check-theme.mjs && node scripts/check-intro.mjs","vendor":"node scripts/vendor.mjs"},"dependencies":{"three":"0.185.1"}}

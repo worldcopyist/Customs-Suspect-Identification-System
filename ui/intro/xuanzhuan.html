@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>系统启动动画</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { display: grid; place-items: center; background: radial-gradient(circle at 50% 50%, #173e6c, #020b18 72%); }
+    .container { width: min(62vw, 360px); aspect-ratio: 1; display: grid; grid-template: 'A A B' 1fr 'C D B' 1fr 'C E E' 1fr / 1fr 1fr 1fr; gap: 10px; animation: spin 10s linear infinite; }
+    .item { overflow: hidden; border: 1px solid #bde9ff99; border-radius: 8px; box-shadow: 0 0 24px #4cbeff55; }
+    .item img { width: 100%; height: 100%; object-fit: cover; display: block; animation: spin 10s linear infinite reverse; }
+    .item:nth-child(1) { grid-area: A; } .item:nth-child(2) { grid-area: B; } .item:nth-child(3) { grid-area: C; } .item:nth-child(4) { grid-area: D; } .item:nth-child(5) { grid-area: E; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container" aria-label="系统启动动画">
+    <div class="item"><img src="/assets/startup-animation/texture.jpg" alt="" /></div>
+    <div class="item"><img src="/assets/startup-animation/portrait-a.png" alt="" /></div>
+    <div class="item"><img src="/assets/startup-animation/portrait-b.png" alt="" /></div>
+    <div class="item"><img src="/assets/startup-animation/portrait-c.png" alt="" /></div>
+    <div class="item"><img src="/assets/startup-animation/background.jpeg" alt="" /></div>
+  </div>
+</body>
+</html>

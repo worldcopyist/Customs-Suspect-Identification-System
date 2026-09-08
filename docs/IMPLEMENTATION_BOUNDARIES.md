@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | 认证、个人中心 | `ui/core.js`、`endpoints/auth.py`、`services/security.py` | 双入口、Cookie/CSRF、改密、会话撤销；匿名不进入初始改密页 |
 | 用户与人员 | `ui/admin.js`、`endpoints/users.py`、`endpoints/persons.py` | 真实账户权限及人员 CRUD；人员关联由人工确认 |
-| 图片与复核 | `ui/detection.js`、`endpoints/records.py`、`services/detection.py` | 单图／批次、受控媒体、水印、复核历史、软删除；实际 YOLO 冒烟通过 |
+| 图片与复核 | `ui/detection.js`、`endpoints/records.py`、`services/detection.py` | 单图／批次、受控媒体、水印、复核历史、软删除；当前 `handsome` 单类别 YOLO 已完成加载及合成图调用，精度与实机仍待验收 |
 | 摄像头 | `ui/detection.js`、`endpoints/camera.py` | 真实采集入口、暂停恢复、代际失效、冻结帧保存；物理设备待验收 |
 | 内部通讯 | `ui/chat.js`、`endpoints/chat.py`、`endpoints/community.py` | 私聊、邀请建群、公共房间确认加入、在线提示；局域网多设备部署待验收 |
 | 云端与智能体 | `ui/assistant.js`、`endpoints/assistant.py`、`endpoints/agents.py` | 角色版本冻结、确切文本预览、单次确认发送、受控 SSE；真实厂商调用待验收 |

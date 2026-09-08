@@ -25,7 +25,7 @@ class _Boxes:
 
 
 class _Result:
-    names = {0: "sus"}
+    names = {0: "handsome"}
     orig_shape = (10, 20)
     boxes = _Boxes()
 
@@ -44,10 +44,10 @@ def test_normalize_image_rejects_non_image_input() -> None:
         normalize_image(b"not an image")
 
 
-def test_yolo_result_parser_returns_only_contractual_sus_boxes() -> None:
+def test_yolo_result_parser_returns_only_contractual_handsome_boxes() -> None:
     boxes, warnings = _parse_results([_Result()], InferenceConfig(0.25, 0.45, 320, 100, "cpu"), 20, 10)
     assert warnings == []
-    assert boxes[0].class_name == "sus"
+    assert boxes[0].class_name == "handsome"
     assert boxes[0].bbox == [1.0, 2.0, 18.0, 9.0]
 
 
@@ -58,4 +58,4 @@ def test_yolo_result_parser_rejects_changed_class_contract() -> None:
             _parse_results([_Result()], InferenceConfig(0.25, 0.45, 320, 100, "cpu"), 20, 10)
         assert raised.value.code == "MODEL_CONTRACT_CHANGED"
     finally:
-        _Result.names = {0: "sus"}
+        _Result.names = {0: "handsome"}

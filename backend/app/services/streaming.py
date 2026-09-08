@@ -53,7 +53,7 @@ async def generate_stream(config,messages,on_delta=None):
                     if not isinstance(part,str):raise ValueError("invalid content")
                     text+=part
                     if len(text)>16000:raise ApiError(502,"OUTPUT_VALIDATION_FAILED","云端回复超出长度上限")
-                    if any(x in text for x in FORBIDDEN_OUTPUT):raise ApiError(502,"OUTPUT_VALIDATION_FAILED","云端输出超出实训边界")
+                    if any(x in text for x in FORBIDDEN_OUTPUT):raise ApiError(502,"OUTPUT_VALIDATION_FAILED","云端输出超出业务边界")
                     if part and on_delta:await on_delta(part)
                     finish=choice.get("finish_reason") or finish
     except (TimeoutError,httpx.TimeoutException) as exc:raise ApiError(504,"PROVIDER_TIMEOUT","云端请求超时，可能已计费；不会自动重试") from exc

@@ -52,14 +52,14 @@ function addPasswordVisibilityControls() {
 function login() {
   const register = state.page === 'register', change = state.page === 'change';
   const title = register ? '创建账户' : change ? '修改初始密码' : '欢迎登录';
-  const sub = register ? '注册后将获得基础实训功能权限' : change ? '为保护账户安全，请设置新密码' : '使用账户进入视觉实训工作台';
+  const sub = register ? '注册后将获得基础业务功能权限' : change ? '为保护账户安全，请设置新密码' : '使用账户进入视觉业务工作台';
   let fields = '';
   if (register) fields = '<label>用户名<input name="username" placeholder="3–32 位字母、数字或下划线"></label><label>显示名称<input name="display_name" placeholder="请输入显示名称"></label><label>密码<input name="password" type="password" placeholder="至少 8 位密码"></label><label>确认密码<input name="password_confirm" type="password" placeholder="再次输入密码"></label>';
   else if (change) fields = '<label>当前密码<input name="current_password" type="password" autofocus></label><label>新密码<input name="new_password" type="password" placeholder="8–128 位，不能使用初始密码"></label><label>确认新密码<input name="new_password_confirm" type="password" placeholder="请再次输入新密码"></label>';
   else fields = '<label>用户名<input name="username" autocomplete="username" placeholder="请输入用户名"></label><label>密码<input name="password" type="password" autocomplete="current-password" placeholder="请输入密码"></label>';
   const localHint = openedAsLocalFile ? '<div class="info-note">当前页面由本地文件打开，登录服务不可用。请访问 <a href="' + serviceUrl + '">' + serviceUrl + '</a></div>' : '';
   const switcher = change ? '' : '<p class="auth-switch">' + (register ? '已有账户？' : '还没有账户？') + ' <a data-page="' + (register ? 'login' : 'register') + '">' + (register ? '返回登录' : '立即注册') + '</a></p>';
-  app.innerHTML = '<section class="auth"><div class="auth-visual"><div class="course-chip">课程实训</div><h1>海关场景<br>嫌疑人智能识别系统</h1><p>检测　·　留档　·　人工复核</p></div><div class="auth-panel"><div class="auth-form"><div class="brand-mark">⌜</div><h2>' + title + '</h2><p class="muted">' + sub + '</p>' + localHint + '<div class="form-stack">' + fields + '</div><p id="auth-error" class="danger"></p>' + button(register ? '注册' : change ? '确认修改' : '登录', 'primary', 'auth-submit') + switcher + '<div class="info-note">ⓘ　仅用于课程实训，检测结果需人工复核</div></div></div></section>';
+  app.innerHTML = '<section class="auth"><div class="auth-visual"><div class="course-chip">企业演示</div><h1>海关场景<br>嫌疑人智能识别系统</h1><p>检测　·　留档　·　人工复核</p></div><div class="auth-panel"><div class="auth-form"><div class="brand-mark">⌜</div><h2>' + title + '</h2><p class="muted">' + sub + '</p>' + localHint + '<div class="form-stack">' + fields + '</div><p id="auth-error" class="danger"></p>' + button(register ? '注册' : change ? '确认修改' : '登录', 'primary', 'auth-submit') + switcher + '<div class="info-note">ⓘ　仅用于企业演示，检测结果需人工复核</div></div></div></section>';
 }
 async function submitAuth() {
   const get = function(name) { const input = document.querySelector('[name="' + name + '"]'); return input ? input.value : ''; };

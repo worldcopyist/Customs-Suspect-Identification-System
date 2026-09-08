@@ -7,6 +7,14 @@ backend/.mypy_cache/
 backend/data/
 backend/media/
 backend/logs/
+backend/models/backups/
 frontend/dist/
 node_modules/
 .pytest_cache/
+
+# Local-only review material and design assets. These patterns intentionally
+# avoid embedding personal names while keeping the source files on this machine.
+/前端页面效果图/
+/页面素材/
+/day4_1_*_文档/
+/day4_1_*_文档.zip

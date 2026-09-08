@@ -1,4 +1,4 @@
-# 海关视觉实训系统后端 · V1.2
+# 海关视觉智能识别系统后端 · V1.2 企业演示
 
 FastAPI 同源提供前端页面和 `/api/v1` 接口，SQLite 保存账户、会话、检测、通讯及审计数据。当前前端入口为根目录 `index.html` → `frontend.js` → `ui/`，旧演示脚本不再加载。实现与未验收项见 `docs/V1.2_IMPLEMENTATION.md`。
 
@@ -64,4 +64,4 @@ npm run check
 
 自动化测试使用临时数据库，不能用真实库跑初始化型 HTTP 冒烟脚本。`scripts/http_smoke.py` 仅适用于 8001 端口全新隔离服务，会创建测试账户并修改该隔离库的初始密码；`scripts/http_inference_smoke.py` 依赖前一步测试账户，会写入合成图检测记录。两者均不得用于当前业务库。
 
-YOLO 权重仅部署维护：`backend/models/suspect-yolo11n-best.pt`，校验摘要由代码固定。输出 `sus` 候选框，不代表人员身份、去重人数或执法结论。真实云端调用需要有效厂商配置并人工确认；测试桩结果不能替代云端验收。
+YOLO 权重仅部署维护：`backend/models/suspect-yolo11n-best.pt`，校验摘要由代码固定。当前批准产物的 SHA-256 为 `d8387eb6ed98d6ff13013f8dc5b1eaac87cb243dc9aa8bc931adf2789abe9329`，输出 `handsome` 候选类别；这不代表人员身份、外貌评价、去重人数或执法结论。已替换的旧产物仅保留在被 Git 忽略的 `backend/models/backups/`，回退必须同时恢复匹配的文件和代码摘要，且不得删除新模型期间生成的历史记录。真实云端调用需要有效厂商配置并人工确认；测试桩结果不能替代云端验收。

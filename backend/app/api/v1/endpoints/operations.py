@@ -40,7 +40,7 @@ def provider_or_404(db: Session, provider_config_id: str) -> ProviderConfig:
 def knowledge_or_404(db: Session, document_id: str) -> KnowledgeDocument:
     document = db.get(KnowledgeDocument, document_id)
     if document is None or document.status=="DELETED":
-        raise ApiError(404, "NOT_FOUND", "实训资料不存在")
+        raise ApiError(404, "NOT_FOUND", "业务资料不存在")
     return document
 
 
@@ -172,7 +172,7 @@ async def test_provider_config(provider_config_id: UUID, payload: ProviderTestIn
         db.add(ProviderCallLedger(provider_config_id=config.id,kind="TEST"))
         db.commit()
         probe=SimpleNamespace(**frozen,temperature=temperature,capabilities={"supports_stream":payload.test_stream})
-        generated=await provider_generate(probe,[{"role":"system","content":"你是课程实训文本助手。"},{"role":"user","content":"仅回复：连接测试成功。"}])
+        generated=await provider_generate(probe,[{"role":"system","content":"你是企业演示文本助手。"},{"role":"user","content":"仅回复：连接测试成功。"}])
         if not generated.get("text") or generated.get("finish_reason")!="stop":
             raise ApiError(502,"PROVIDER_RESPONSE_INVALID","测试未返回完整正文，不能认证能力")
         results.append(generated)

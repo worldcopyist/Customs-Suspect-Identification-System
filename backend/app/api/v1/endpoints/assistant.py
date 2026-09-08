@@ -171,7 +171,7 @@ def prepare_request(payload: PrepareRequestIn, request: Request, response: Respo
     elif payload.mode == "KNOWLEDGE":
         matches = retrieve_knowledge(db, payload.question)
         if not matches:
-            raise ApiError(422, "SOURCE_INSUFFICIENT", "没有足够的实训资料可用于回答，请调整问题或改用普通问答")
+            raise ApiError(422, "SOURCE_INSUFFICIENT", "没有足够的业务资料可用于回答，请调整问题或改用普通问答")
         for index, (document, chunk) in enumerate(matches, start=1):
             label = f"K{index}"
             source_refs.append({"type": "KNOWLEDGE", "id": document.id, "version": document.version,

@@ -92,7 +92,7 @@ def render_business_answer(text, request):
     snapshots=request.outbound_payload.get('fact_snapshots')
     if not snapshots or {x['label'] for x in snapshots}!=allowed:
         raise ApiError(502,"OUTPUT_VALIDATION_FAILED","缺少完整冻结事实，不能生成报告")
-    heading='# 实训检测报告草稿' if request.mode=='REPORT' else '# 实训检测事件摘要'
+    heading='# 业务检测报告草稿' if request.mode=='REPORT' else '# 业务检测事件摘要'
     lines=[heading,'','## 基本情况',f'本次明确选择 {len(snapshots)} 条记录；以下事实由后端冻结数据生成，不由模型改写。','', '## 检测结果']
     for row in snapshots:
         lines.append(f"- [{row['label']}] 记录 {safe_text(row['record_id'])}；来源 {safe_text(row['source'])}；时间（UTC）{safe_text(row['time_utc'])}；状态 {safe_text(row['state'])}；候选框 {row['box_count']} 个；阈值 {safe_text(row['threshold'])}；置信度 {safe_text(row['confidences'])}；模型 {safe_text(row['model'])} / {safe_text(row['model_hash'])}。")
@@ -101,7 +101,7 @@ def render_business_answer(text, request):
     for row in snapshots:
         links='；'.join(f"第 {link['box']} 框 → 虚拟人员编号 {safe_text(link['person_code'])}（人工关联）" for link in row['manual_links']) or '尚无人工关联'
         lines.append(f"- [{row['label']}] {links}。关联不是模型身份判断。")
-    lines+=['','## 限制与待确认事项','仅用于课程实训；框数不是去重人数，未检出也不能证明不存在目标。','以下核对事项由AI从固定清单选择，并非事实结论：']
+    lines+=['','## 限制与待确认事项','仅用于企业演示；框数不是去重人数，未检出也不能证明不存在目标。','以下核对事项由AI从固定清单选择，并非事实结论：']
     for check in data.pending_checks:lines.append('- '+CHECKS[check.code]+' '+''.join('['+x+']' for x in check.citations))
     lines+=['','## 来源清单']+[f"- [{row['label']}] 检测记录 {safe_text(row['record_id'])}，版本 {row['version']}" for row in snapshots]
     return '\n'.join(lines)

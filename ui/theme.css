@@ -1,0 +1,54 @@
+:root { color-scheme: dark; --surface: #102238; --text: #e5efff; }
+.theme-control { position: fixed; top: 12px; right: 20px; z-index: 50; display: flex; flex-direction: row; align-items: center; gap: 8px; margin: 0; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; }
+.theme-control select { width: 115px; height: 34px; padding: 4px 8px; }
+.topbar { padding-right: 220px; }
+.auth-panel { padding-top: 90px; background: var(--surface); color: var(--text); }
+.auth-visual { color: #f0f6ff; }
+.auth-visual .tag { color: #c0efff; background: #123650; border-color: #4486b1; }
+[data-theme="dark"] .auth .muted { color: #97acc8; }
+[data-theme="dark"] .auth label { color: #bfd0e8; }
+[data-theme="dark"] .auth input { background: #0c1c2e; color: #e9f4ff; border-color: #36516f; }
+[data-theme="dark"] .auth .notice { background: #133551; color: #b8d8ea; border-color: #295777; }
+[data-theme="dark"] .auth .link { color: #70c8ff; }
+[data-theme="dark"] .auth .eye { color: #bfd0e8; }
+:root[data-theme="light"] { color-scheme: light; color: #182e49; background: #f3f6fb; --surface: #fff; --text: #182e49; --muted: #526781; --line: #cfdbea; --cyan: #006b88; --panel: #fff; }
+[data-theme="light"] button { background: #eef3fa; color: #233d5b; border-color: #b5c9df; }
+[data-theme="light"] button:hover { background: #e0ecfa; border-color: #3175c8; }
+[data-theme="light"] button.primary, [data-theme="light"] .tabs .active, [data-theme="light"] .shell nav button.active { background: #1d61d9; color: #fff; border-color: #1d61d9; }
+[data-theme="light"] .danger { color: #a91c36; border-color: #c96779; }
+[data-theme="light"] .link, [data-theme="light"] a { color: #155aba; background: transparent; }
+[data-theme="light"] .link { border-color: transparent; }
+[data-theme="light"] input, [data-theme="light"] select, [data-theme="light"] textarea { color: #182e49; background: #fff; border-color: #b5c9df; }
+[data-theme="light"] label { color: #314c6b; }
+[data-theme="light"] .shell>aside { background: linear-gradient(#f8fbff,#e6eef9); }
+[data-theme="light"] .brand { color: #153759; }
+[data-theme="light"] .shell nav button { color: #314c6b; }
+[data-theme="light"] .nav-label { color: #526781; }
+[data-theme="light"] .topbar, [data-theme="light"] .card, [data-theme="light"] dialog, [data-theme="light"] .quick-chat { background: #fff; color: #182e49; border-color: var(--line); }
+[data-theme="light"] .tag { color: #006680; background: #e7f5fb; border-color: #a5cadc; }
+[data-theme="light"] .notice { color: #28577a; background: #edf5ff; border-color: #bdd5ed; }
+[data-theme="light"] .error, [data-theme="light"] .form-error:not(:empty) { color: #a62238; background: #fff0f2; border-color: #e2a1ab; }
+[data-theme="light"] .empty { color: #526781; border-color: #aabdd1; }
+[data-theme="light"] .eye { color: #314c6b; background: transparent; }
+[data-theme="light"] th { color: #395978; background: #edf3fa; }
+[data-theme="light"] tr:hover td { background: #f1f6fc; }
+[data-theme="light"] .metric { color: #006e83; }
+[data-theme="light"] .chat-window { background: #f6f9fd; }
+[data-theme="light"] .message { background: #e8eef6; }
+[data-theme="light"] .message.mine, [data-theme="light"] .contact.selected { background: #dcecff; }
+[data-theme="light"] .contact { background: transparent; }
+[data-theme="light"] .dropzone { color: #186683; border-color: #4b8cab; }
+[data-theme="light"] .dropzone:hover, [data-theme="light"] .dropzone.drag { background: #e3f2fa; }
+[data-theme="light"] .markdown pre { background: #f2f6fb; border-color: #cfdbea; }
+[data-theme="light"] .markdown code { color: #006577; }
+[data-theme="light"] .markdown blockquote { color: #466580; }
+[data-theme="light"] .status-line { color: #006e83; }
+[data-theme="light"] .floating { color: white; background: #1c61c3; }
+.avatar, .camera-stage .watermark { color: #edf5ff; }
+.avatar .muted { color: #b8cbe2; }
+.avatar .status-line { color: #9ce4ef; }
+@media(max-width:760px) {
+  .shell>aside { padding-top: 76px; }
+  .topbar { padding-right: 18px; }
+  .theme-control { right: 14px; }
+}

@@ -45,7 +45,7 @@ def websocket_user(raw_cookie: str | None) -> str | None:
 def create_app() -> FastAPI:
     logger = configure_logging()
     app = FastAPI(
-        title="海关视觉实训智能识别系统 API",
+        title="海关视觉智能识别系统 API",
         version="1.2.0",
         lifespan=lifespan,
         docs_url="/api/docs",
@@ -66,7 +66,8 @@ def create_app() -> FastAPI:
         response.headers["X-Request-ID"] = request.state.request_id
         response.headers["X-Content-Type-Options"]="nosniff"
         response.headers["Referrer-Policy"]="same-origin"
-        response.headers["Content-Security-Policy"]="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; frame-ancestors 'none'"
+        frame_ancestors = "'self'" if request.url.path.startswith("/ui/intro/") else "'none'"
+        response.headers["Content-Security-Policy"]=f"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; media-src 'self' blob:; frame-src 'self'; object-src 'none'; frame-ancestors {frame_ancestors}"
         response.headers["Cache-Control"]="private,no-store"
         if request.url.path.startswith("/api/v1/") and (response.status_code>=400 or request.method not in {"GET","HEAD","OPTIONS"}):
             from app.models.extension import OperationLog

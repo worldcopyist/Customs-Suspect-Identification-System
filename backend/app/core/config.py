@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     yolo_model_filename: str = "suspect-yolo11n-best.pt"
     # This is the digest of the supplied, approved training artifact.  It is
     # deliberately not accepted from a request or an admin-facing endpoint.
-    yolo_model_sha256: str = "6f4a8baed78f970a5141cc43e356af8f68c8cef6e7e73ab376ea6893ed4a2b1a"
+    yolo_model_sha256: str = "d8387eb6ed98d6ff13013f8dc5b1eaac87cb243dc9aa8bc931adf2789abe9329"
     yolo_confidence: float = 0.25
     yolo_iou: float = 0.45
     yolo_imgsz: int = 320
