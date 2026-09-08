@@ -14,12 +14,19 @@ router = APIRouter(tags=["system"])
 @router.get("/system/status", response_model=SuccessResponse[SystemStatus])
 async def system_status(request: Request) -> SuccessResponse[SystemStatus]:
     """框架健康状态；不暴露路径、依赖版本、密钥或模型细节。"""
+    if not getattr(request.app.state, "database_ready", True):
+        return SuccessResponse(
+            data=SystemStatus(
+                database=ServiceComponent(state="UNAVAILABLE"), model=ServiceComponent(state="UNAVAILABLE"),
+                llm=ServiceComponent(state="UNAVAILABLE"), avatar=ServiceComponent(state="UNAVAILABLE"),
+            ), request_id=request_id(request),
+        )
     with SessionLocal() as db:
         configs = list(db.scalars(select(ProviderConfig).where(ProviderConfig.enabled.is_(True))))
         llm_state = "READY" if any(item.validation_fingerprint == validation_fingerprint(item) for item in configs) else "UNAVAILABLE"
     return SuccessResponse(
         data=SystemStatus(
-            database=ServiceComponent(state="UNAVAILABLE"),
+            database=ServiceComponent(state="READY"),
             model=ServiceComponent(state="READY" if request.app.state.inference_coordinator.available else "UNAVAILABLE"),
             llm=ServiceComponent(state=llm_state),
             avatar=ServiceComponent(state="UNAVAILABLE"),

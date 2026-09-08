@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 import asyncio
+import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -47,13 +48,44 @@ def initialize_database() -> None:
         db.add(OperationLog(level="INFO",module="system",event_code="SERVICE_STARTED",safe_context={}))
 
 
+def database_file_is_current() -> bool:
+    """Normal startup never upgrades a database; maintenance must do that."""
+    url = get_settings().database_url.removeprefix("sqlite:///")
+    if url == ":memory:":
+        return True
+    path = Path(url)
+    if not path.is_absolute():
+        path = get_settings().frontend_root / path
+    if not path.is_file():
+        return False
+    try:
+        with sqlite3.connect(path) as connection:
+            row = connection.execute("SELECT version_num FROM alembic_version").fetchone()
+    except sqlite3.Error:
+        return False
+    return bool(row and row[0] == "20260908_0007")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """为后续 DB、推理调度器和 HTTP 客户端保留唯一的启动/停止入口。"""
     settings = get_settings()
+    # New systems must be initialized deliberately.  A normal production
+    # startup must neither create an empty SQLite file nor seed admin/admin123.
+    # The isolated test environment opts in through DATABASE_AUTO_INITIALIZE.
+    if settings.database_auto_initialize or settings.app_env.lower() == "test":
+        initialize_database()
+        app.state.database_ready = True
+    elif not database_file_is_current():
+        app.state.database_ready = False
+        try:
+            yield
+        finally:
+            pass
+        return
+    app.state.database_ready = True
     settings.media_root.mkdir(parents=True, exist_ok=True)
     settings.models_root.mkdir(parents=True, exist_ok=True)
-    initialize_database()
     app.state.inference_coordinator = InferenceCoordinator(settings)
     app.state.camera_cache = {}
     app.state.camera_cache_lock = threading.Lock()
@@ -67,5 +99,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         app.state.inference_coordinator.close()
-        with SessionLocal.begin() as db:
-            db.add(OperationLog(level="INFO",module="system",event_code="SERVICE_STOPPED",safe_context={}))
+        if app.state.database_ready:
+            with SessionLocal.begin() as db:
+                db.add(OperationLog(level="INFO",module="system",event_code="SERVICE_STOPPED",safe_context={}))

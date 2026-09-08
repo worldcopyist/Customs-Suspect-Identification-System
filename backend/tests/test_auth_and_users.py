@@ -113,3 +113,45 @@ def test_authentication_role_boundaries_and_revocation(tmp_path: Path) -> None:
         db_session.SessionLocal.configure(bind=old_bind)
         get_settings().database_url = old_url
         engine.dispose()
+
+
+def test_logout_returns_declared_no_content_and_clears_session(tmp_path: Path) -> None:
+    old_url, old_bind, engine = _configure_test_database(tmp_path / "logout.db")
+    try:
+        with TestClient(create_app(), base_url=ORIGIN) as client:
+            login = _write(client, "POST", "/api/v1/auth/login", {"username": "admin", "password": "admin123"})
+            assert login.status_code == 200
+            csrf = login.json()["data"]["csrf_token"]
+            logout = _write(client, "POST", "/api/v1/auth/logout", {}, csrf)
+            assert logout.status_code == 204
+            assert "customs_session=" in logout.headers.get("set-cookie", "")
+            assert client.get("/api/v1/auth/me").status_code == 401
+    finally:
+        db_session.SessionLocal.configure(bind=old_bind)
+        get_settings().database_url = old_url
+        engine.dispose()
+
+
+def test_jwt_cookie_replaces_an_older_account_session(tmp_path: Path) -> None:
+    old_url, old_bind, engine = _configure_test_database(tmp_path / "jwt.db")
+    try:
+        with TestClient(create_app(), base_url=ORIGIN) as first, TestClient(create_app(), base_url=ORIGIN) as second:
+            registered = _write(first, "POST", "/api/v1/auth/register", {
+                "username": "jwt_user", "display_name": "JWT User", "password": "JwtSecure!12345", "password_confirm": "JwtSecure!12345",
+            })
+            assert registered.status_code == 201
+            first_login = _write(first, "POST", "/api/v1/auth/login", {"username": "jwt_user", "password": "JwtSecure!12345"})
+            assert first_login.status_code == 200
+            first_data = first_login.json()["data"]
+            assert first_data["auth_scheme"] == "JWT_COOKIE"
+            assert first_data["idle_timeout_seconds"] == 1800
+            assert "customs_access=" in first_login.headers.get("set-cookie", "")
+
+            second_login = _write(second, "POST", "/api/v1/auth/login", {"username": "jwt_user", "password": "JwtSecure!12345"})
+            assert second_login.status_code == 200
+            assert first.get("/api/v1/auth/me").status_code == 401
+            assert second.get("/api/v1/auth/me").status_code == 200
+    finally:
+        db_session.SessionLocal.configure(bind=old_bind)
+        get_settings().database_url = old_url
+        engine.dispose()

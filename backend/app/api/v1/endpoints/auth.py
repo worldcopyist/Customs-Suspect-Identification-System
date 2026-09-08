@@ -13,8 +13,9 @@ from app.schemas.auth import (
 from app.schemas.common import SuccessResponse
 from app.services.business import audit,version
 from app.services.security import (
-    ApiError, clear_session_cookie, new_session, now, password_hash, require_csrf, require_session, require_user,
-    revoke_user_sessions, session_from_request, set_session_cookie, verify_password, validate_session,
+    ApiError, clear_session_cookie, invalidate_user_auth, new_session, now, password_hash, require_csrf, require_session,
+    require_user, revoke_user_sessions, session_from_request, set_csrf_cookie, set_session_cookie, verify_password,
+    validate_session,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -37,6 +38,9 @@ def csrf(request: Request, response: Response, db: Session = Depends(get_db)) ->
             validate_session(session)
         except ApiError:
             session = None
+            # A stale access token must not prevent the browser from obtaining
+            # a fresh anonymous CSRF context for a legitimate re-login.
+            clear_session_cookie(response)
     if session is None or session.revoked_at is not None or session.expires_at.replace(tzinfo=now().tzinfo) <= now():
         session, raw_token, csrf_token = new_session(db)
     else:
@@ -46,7 +50,7 @@ def csrf(request: Request, response: Response, db: Session = Depends(get_db)) ->
         session.csrf_hash = secret_hash(csrf_token)
     db.commit()
     if raw_token:
-        set_session_cookie(response, raw_token, session.expires_at)
+        set_csrf_cookie(response, raw_token, session.expires_at)
     return csrf_response(request, session, csrf_token)
 
 
@@ -80,24 +84,26 @@ def login(payload: LoginIn, request: Request, response: Response, db: Session = 
         raise ApiError(403, "ACCOUNT_DISABLED", "账户已停用")
     if payload.portal == "ADMIN" and user.role == "USER":
         raise ApiError(403, "PORTAL_FORBIDDEN", "普通用户不能进入管理端，请选择用户端")
-    old = session_from_request(request, db)
-    if old is not None:
-        old.revoked_at = now()
+    # A successful login replaces every earlier sid for this account. Failed
+    # logins do not reach this point and cannot evict a valid session.
+    revoke_user_sessions(db, user.id)
     phase = SessionPhase.CHANGE_PASSWORD if user.must_change_password else SessionPhase.FULL
     session, raw_token, csrf_token = new_session(db, user, phase)
     audit(db,request,user,'LOGIN_SUCCEEDED','USER',user.id,after={'portal':payload.portal})
     db.commit()
     set_session_cookie(response, raw_token, session.expires_at)
+    set_csrf_cookie(response, csrf_token, session.expires_at)
     profile=user_out(user)
     if phase == SessionPhase.CHANGE_PASSWORD:profile.permissions=[]
     return SuccessResponse(
-        data=LoginOut(user=profile, session_phase=phase.value, csrf_token=csrf_token, expires_at=session.expires_at),
+        data=LoginOut(user=profile, session_phase=phase.value, csrf_token=csrf_token, expires_at=session.expires_at,
+                      auth_scheme="JWT_COOKIE", session_id=session.id, idle_timeout_seconds=1800),
         request_id=request_id(request),
     )
 
 
 @router.post("/logout", status_code=204)
-def logout(request: Request, response: Response, db: Session = Depends(get_db)) -> Response:
+def logout(request: Request, response: Response, db: Session = Depends(get_db)) -> None:
     session = session_from_request(request, db)
     if session is not None:
         # 过期状态退出也应幂等清 Cookie；若携带有效会话则仍执行 CSRF 校验。
@@ -106,7 +112,9 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)) 
         session.revoked_at = now()
         db.commit()
     clear_session_cookie(response)
-    return response
+    # FastAPI keeps headers/cookies set on the injected response while it
+    # constructs the declared 204 response. Returning that response skeleton
+    # directly can leave its status_code unset on newer FastAPI releases.
 
 
 @router.get("/me", response_model=SuccessResponse[UserOut])
@@ -125,7 +133,7 @@ def update_me(payload: UpdateMeIn, request: Request, db: Session = Depends(get_d
 
 
 @router.post("/password", response_model=SuccessResponse[dict])
-def change_password(payload: ChangePasswordIn, request: Request, db: Session = Depends(get_db)) -> SuccessResponse[dict]:
+def change_password(payload: ChangePasswordIn, request: Request, response: Response, db: Session = Depends(get_db)) -> SuccessResponse[dict]:
     require_csrf(request, db)
     session, user = require_session(request, db)
     if not verify_password(payload.current_password, user.password_hash):
@@ -136,9 +144,10 @@ def change_password(payload: ChangePasswordIn, request: Request, db: Session = D
     user.password_hash = password_hash(payload.new_password)
     user.must_change_password = False
     user.version += 1
-    revoke_user_sessions(db, user.id)
+    invalidate_user_auth(db, user)
     # 本次请求完成后也必须重新认证，不保留能够继续使用的会话。
     session.revoked_at = now()
     audit(db,request,user,'PASSWORD_CHANGED','USER',user.id)
     db.commit()
+    clear_session_cookie(response)
     return SuccessResponse(data={"password_changed": True, "reauthentication_required": True}, request_id=request_id(request))

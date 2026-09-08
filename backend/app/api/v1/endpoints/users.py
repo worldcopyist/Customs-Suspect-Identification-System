@@ -14,8 +14,8 @@ from app.schemas.auth import (
 )
 from app.schemas.common import SuccessResponse
 from app.services.security import (
-    ApiError, can_manage, password_hash, require_csrf, require_manager, require_super_admin, require_user,
-    revoke_user_sessions,
+    ApiError, can_manage, invalidate_user_auth, password_hash, require_csrf, require_manager, require_super_admin,
+    require_user,
 )
 
 router = APIRouter(prefix="/admin/users", tags=["users"])
@@ -117,7 +117,7 @@ def update_status(user_id: str, payload: StatusIn, request: Request, db: Session
     check_version(target, payload.expected_version)
     target.status = payload.status
     target.version += 1
-    revoke_user_sessions(db, target.id)
+    invalidate_user_auth(db, target)
     audit(db, actor, target, "USER_STATUS_UPDATED", status=payload.status)
     db.commit()
     return SuccessResponse(data=to_user(target), request_id=request_id(request))
@@ -136,7 +136,7 @@ def delete_user(
     check_version(target, int(if_match[2:-1]))
     target.status = UserStatus.DELETED.value
     target.version += 1
-    revoke_user_sessions(db, target.id)
+    invalidate_user_auth(db, target)
     audit(db, actor, target, "USER_DELETED")
     db.commit()
     return response
@@ -153,7 +153,7 @@ def update_role(user_id: str, payload: RoleIn, request: Request, db: Session = D
     if payload.role == Role.USER.value:
         target.permissions = sorted(DEFAULT_PERMISSIONS)
     target.version += 1
-    revoke_user_sessions(db, target.id)
+    invalidate_user_auth(db, target)
     audit(db, actor, target, "USER_ROLE_UPDATED", old_role=old_role, new_role=payload.role)
     db.commit()
     return SuccessResponse(data=to_user(target), request_id=request_id(request))
@@ -169,7 +169,7 @@ def update_permissions(user_id: str, payload: PermissionsIn, request: Request, d
     check_version(target, payload.expected_version)
     target.permissions = payload.permissions
     target.version += 1
-    revoke_user_sessions(db, target.id)
+    invalidate_user_auth(db, target)
     audit(db, actor, target, "USER_PERMISSIONS_UPDATED")
     db.commit()
     return SuccessResponse(data=to_user(target), request_id=request_id(request))
@@ -186,7 +186,7 @@ def reset_password(user_id: str, payload: ResetPasswordIn, request: Request, db:
     target.password_hash = password_hash(payload.temporary_password)
     target.must_change_password = True
     target.version += 1
-    revoke_user_sessions(db, target.id)
+    invalidate_user_auth(db, target)
     audit(db, actor, target, "USER_PASSWORD_RESET")
     db.commit()
     return SuccessResponse(data={"reset": True, "must_change_password": True, "version": target.version}, request_id=request_id(request))

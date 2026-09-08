@@ -69,6 +69,9 @@ class LoginOut(StrictModel):
     session_phase: Literal["FULL", "CHANGE_PASSWORD"]
     csrf_token: str
     expires_at: datetime
+    auth_scheme: Literal["JWT_COOKIE"]
+    session_id: str
+    idle_timeout_seconds: Literal[1800]
 
 
 class UpdateMeIn(StrictModel):

@@ -5,8 +5,8 @@ from app.core.config import get_settings
 from app.db.session import SessionLocal
 @pytest.fixture(autouse=True)
 def isolated_system(tmp_path):
-    settings=get_settings();old={k:getattr(settings,k) for k in ("database_url","media_root","logs_root")};bind=SessionLocal.kw["bind"]
-    settings.database_url=f"sqlite:///{tmp_path/'test.db'}";settings.media_root=tmp_path/'media';settings.logs_root=tmp_path/'logs'
+    settings=get_settings();old={k:getattr(settings,k) for k in ("database_url","media_root","logs_root","app_env","database_auto_initialize")};bind=SessionLocal.kw["bind"]
+    settings.database_url=f"sqlite:///{tmp_path/'test.db'}";settings.media_root=tmp_path/'media';settings.logs_root=tmp_path/'logs';settings.app_env="test";settings.database_auto_initialize=True
     engine=create_engine(settings.database_url,connect_args={"check_same_thread":False})
     @event.listens_for(engine,"connect")
     def pragmas(c,_):c.execute("PRAGMA foreign_keys=ON");c.execute("PRAGMA journal_mode=WAL")

@@ -1,11 +1,12 @@
-"""密码、会话、CSRF 与服务端授权。"""
+"""Passwords, JWT cookies, CSRF, and server-side authorization."""
 
+import base64
+import json
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 import hmac
-import ipaddress
 import secrets
-from urllib.parse import urlparse
+from uuid import uuid4
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
@@ -48,16 +49,68 @@ def verify_password(password: str, encoded: str) -> bool:
         return False
 
 
+def _b64url_encode(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
+
+
+def _b64url_decode(value: str) -> bytes:
+    return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+
+
+def _jwt_encode(*, user: User, session: AuthSession, jti: str) -> str:
+    settings = get_settings()
+    issued_at = int(session.issued_at.timestamp())
+    payload = {
+        "iss": settings.jwt_issuer, "aud": "customs-web", "sub": user.id,
+        "sid": session.id, "jti": jti, "iat": issued_at, "nbf": issued_at,
+        "exp": int(session.expires_at.timestamp()), "auth_version": user.auth_version,
+        "phase": session.phase,
+    }
+    header = {"alg": "HS256", "typ": "JWT"}
+    signing_input = f"{_b64url_encode(json.dumps(header, separators=(',', ':')).encode())}.{_b64url_encode(json.dumps(payload, separators=(',', ':')).encode())}"
+    signature = hmac.new(settings.jwt_signing_key.encode(), signing_input.encode(), sha256).digest()
+    return f"{signing_input}.{_b64url_encode(signature)}"
+
+
+def _jwt_decode(token: str) -> dict:
+    try:
+        encoded_header, encoded_payload, encoded_signature = token.split(".")
+        signing_input = f"{encoded_header}.{encoded_payload}"
+        expected = hmac.new(get_settings().jwt_signing_key.encode(), signing_input.encode(), sha256).digest()
+        if not hmac.compare_digest(expected, _b64url_decode(encoded_signature)):
+            raise ValueError("signature")
+        header = json.loads(_b64url_decode(encoded_header))
+        payload = json.loads(_b64url_decode(encoded_payload))
+        if header != {"alg": "HS256", "typ": "JWT"}:
+            raise ValueError("header")
+        required = {"iss", "aud", "sub", "sid", "jti", "iat", "nbf", "exp", "auth_version", "phase"}
+        if not required.issubset(payload) or payload["iss"] != get_settings().jwt_issuer or payload["aud"] != "customs-web":
+            raise ValueError("claims")
+        current = int(now().timestamp())
+        if not isinstance(payload["exp"], int) or not isinstance(payload["nbf"], int) or payload["nbf"] > current or payload["exp"] <= current:
+            raise ApiError(401, "TOKEN_EXPIRED", "登录令牌已过期，请重新登录")
+        if not all(isinstance(payload[name], str) and payload[name] for name in ("sub", "sid", "jti", "phase")) or not isinstance(payload["auth_version"], int):
+            raise ValueError("claims")
+        return payload
+    except ApiError:
+        raise
+    except (ValueError, UnicodeDecodeError, json.JSONDecodeError, TypeError) as exc:
+        raise ApiError(401, "TOKEN_INVALID", "登录令牌无效，请重新登录") from exc
+
+
 def new_session(db: Session, user: User | None = None, phase: SessionPhase = SessionPhase.ANONYMOUS) -> tuple[AuthSession, str, str]:
     settings = get_settings()
     token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
     issued = now()
     seconds = settings.restricted_session_seconds if phase != SessionPhase.FULL else settings.session_absolute_seconds
     session = AuthSession(
-        token_hash=secret_hash(token), csrf_hash=secret_hash(csrf), user_id=user.id if user else None,
+        id=str(uuid4()), token_hash=secret_hash(token), csrf_hash=secret_hash(csrf), user_id=user.id if user else None,
         phase=phase.value, issued_at=issued, expires_at=issued + timedelta(seconds=seconds), last_seen_at=issued,
+        auth_version=user.auth_version if user else 0,
     )
     db.add(session)
+    if user is not None:
+        return session, _jwt_encode(user=user, session=session, jti=token), csrf
     return session, token, csrf
 
 
@@ -65,14 +118,31 @@ def revoke_user_sessions(db: Session, user_id: str) -> None:
     db.execute(update(AuthSession).where(AuthSession.user_id == user_id, AuthSession.revoked_at.is_(None)).values(revoked_at=now()))
 
 
-def session_from_request(request: Request, db: Session) -> AuthSession | None:
-    raw = request.cookies.get("customs_session")
-    if not raw:
-        return None
-    session = db.scalar(select(AuthSession).where(AuthSession.token_hash == secret_hash(raw)))
-    if session is None:
-        return None
+def invalidate_user_auth(db: Session, user: User) -> None:
+    """Invalidate every token after a privilege, state, or password change."""
+    user.auth_version += 1
+    revoke_user_sessions(db, user.id)
+
+
+def session_from_access_token(raw: str, db: Session) -> AuthSession:
+    claims = _jwt_decode(raw)
+    session = db.get(AuthSession, claims["sid"])
+    if session is None or session.user_id != claims["sub"] or session.token_hash != secret_hash(claims["jti"]):
+        raise ApiError(401, "SESSION_REVOKED", "登录状态已失效，请重新登录")
+    if session.auth_version != claims["auth_version"]:
+        raise ApiError(401, "SESSION_REVOKED", "登录状态已失效，请重新登录")
     return session
+
+
+def session_from_request(request: Request, db: Session) -> AuthSession | None:
+    raw = request.cookies.get("customs_access")
+    if raw:
+        return session_from_access_token(raw, db)
+    # Anonymous CSRF state is deliberately separate from the identity JWT.
+    csrf_context = request.cookies.get("customs_csrf")
+    if not csrf_context:
+        return None
+    return db.scalar(select(AuthSession).where(AuthSession.token_hash == secret_hash(csrf_context), AuthSession.user_id.is_(None)))
 
 
 def validate_session(session: AuthSession, require_full: bool = False) -> User | None:
@@ -94,6 +164,8 @@ def validate_session(session: AuthSession, require_full: bool = False) -> User |
         raise ApiError(401,"UNAUTHENTICATED","请先登录")
     if user is not None and user.status != UserStatus.ACTIVE.value:
         raise ApiError(403, "ACCOUNT_DISABLED", "账户已停用")
+    if user is not None and session.auth_version != user.auth_version:
+        raise ApiError(401, "SESSION_REVOKED", "登录状态已失效，请重新登录")
     if require_full and session.phase != SessionPhase.FULL.value:
         raise ApiError(403, "PASSWORD_CHANGE_REQUIRED", "请先修改初始密码")
     return user
@@ -163,10 +235,18 @@ def can_manage(actor: User, target: User) -> bool:
 
 def set_session_cookie(response, token: str, expires_at: datetime) -> None:  # type: ignore[no-untyped-def]
     response.set_cookie(
-        "customs_session", token, httponly=True, secure=get_settings().cookie_secure,
+        "customs_access", token, httponly=True, secure=get_settings().cookie_secure,
         samesite="strict", path="/", expires=expires_at,
     )
 
 
+def set_csrf_cookie(response, token: str, expires_at: datetime) -> None:  # type: ignore[no-untyped-def]
+    response.set_cookie("customs_csrf", token, httponly=True, secure=get_settings().cookie_secure,
+                        samesite="strict", path="/", expires=expires_at)
+
+
 def clear_session_cookie(response) -> None:  # type: ignore[no-untyped-def]
+    response.delete_cookie("customs_access", path="/")
+    response.delete_cookie("customs_csrf", path="/")
+    # Remove the V1.2 token on the client, but never accept it again.
     response.delete_cookie("customs_session", path="/")

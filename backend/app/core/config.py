@@ -17,11 +17,16 @@ class Settings(BaseSettings):
     )
 
     app_env: str = "development"
-    app_host: str = "0.0.0.0"
+    app_host: str = "127.0.0.1"
     app_port: int = 8000
     app_secret_key: str = "development-only-change-me"
-    database_url: str = f"sqlite:///{BACKEND_ROOT / 'data' / 'customs_training.db'}"
-    media_root: Path = BACKEND_ROOT / "media"
+    # Kept independent from APP_SECRET_KEY, which protects existing encrypted
+    # provider credentials and must not be rotated as part of JWT migration.
+    jwt_signing_key: str = "development-only-jwt-change-me"
+    jwt_issuer: str = "customs-suspect-identification"
+    database_url: str = f"sqlite:///{PROJECT_ROOT / 'database' / 'customs_training.db'}"
+    database_auto_initialize: bool = False
+    media_root: Path = PROJECT_ROOT / "results"
     logs_root: Path = BACKEND_ROOT / "logs"
     models_root: Path = BACKEND_ROOT / "models"
     yolo_model_filename: str = "suspect-yolo11n-best.pt"

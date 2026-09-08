@@ -4,7 +4,7 @@
 
 This is the English handover document for AI-assisted maintenance of the Customs Suspect Identification System. Read this file before planning, reviewing, changing, testing, or deploying the repository. It is a development aid, not a replacement for the Chinese source requirements.
 
-The project has no Git commit history at the time of this document. The earlier ledger below is a reconstruction from available source files, local implementation notes, test evidence, and user-reported issues. It cannot recover every historical line edit, precise timestamp, or unrecorded failed attempt. Do not present a reconstructed item as a complete audit trail.
+At the original handbook creation, the project had no Git commit history. Git publication and subsequent history changes are recorded in CHG-0012 through CHG-0016; this introductory observation is historical, not the current repository state. The earlier ledger below is a reconstruction from available source files, local implementation notes, test evidence, and user-reported issues. It cannot recover every historical line edit, precise timestamp, or unrecorded failed attempt. Do not present a reconstructed item as a complete audit trail.
 
 Facts are marked as `OBSERVED` when they were checked in source, tests, runtime, or dated records. `HISTORICAL` means a prior work record exists but was not re-run for this documentation change. `OPEN` is an unverified, deferred, or external dependency. Requirement documents describe target behavior; they do not prove implementation.
 
@@ -20,26 +20,27 @@ Never rely only on screenshots, a health endpoint, a historical note, an unmount
 
 ## 3. Source register
 
-| Source | Role | Version/date | Integrity snapshot on 2026-09-07 |
+| Source | Role | Version/date | Integrity snapshot on 2026-09-08 |
 | --- | --- | --- | --- |
-| Product Requirements Document | Product scope, roles, acceptance criteria | V1.2 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `63cac1c7f5cc991f0c7e3cf80caf329f03fd815778f88e24d9bdeb7dc2969ac9` |
-| API Contract | REST, WebSocket, error, state, and permission contract | 1.1 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `95a3f0254014d450e05a9a80f1d30988b49c76ee1d225138ce307d512134fc6a` |
-| Architecture Design | Intended architecture and deployment constraints | 1.1 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `7d60175badfcf21dfd942cb47e75067d1ade6076a16ebfb7c59ac478e2e643b6` |
-| AI Technical Design | Detection, cloud text, safety, and avatar boundaries | 1.1 plus CHG-0015 addendum, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `253f968fc41514ecaa5575023971a46e0bfd4ea354dba02445f20ec368071111` |
+| Product Requirements Document | Product scope, roles and functional requirements | V1.3, CHG-0019, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `90496564b03be7f1b896283159ae120ab6e8f21539045cc5e0d95602dd5ffe9d` |
+| API Contract | REST, JWT, WebSocket, speech, avatar and permission contract | 1.2, CHG-0019, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `ec5e88e1bfcc4478c53217bf1486289129ef0330b53bb2a117fff9d2b8dfce74` |
+| Architecture Design | Target architecture and non-destructive migration design | 1.2, CHG-0019, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `da9164dea99c767f940f54b6354e3242809c26b72a1ac179ed35b78c1a6dfb57` |
+| AI Technical Design | Detection, multimodal speech, safety and avatar import | 1.2, CHG-0019, 2026-09-08 | Controlled local source, excluded from Git. SHA-256 `80fb4304f51f8816c1fc04dd3c3d458106eea251e05f44937c0d870bcb1772c2` |
+| User-supplied task brief PDF | Functional source, pages 1-5; user scope overrides submission requirements | Read-only source, checked 2026-09-08 | Controlled local source. SHA-256 `23ab8da5d61aa17436f6dd9c2ea04657fc44f1cd304c12ea727ded5749298999` |
 | `docs/V1.2_IMPLEMENTATION.md` | Dated implementation and verification record | updated 2026-09-08 | Current status, not a requirements replacement |
-| `docs/IMPLEMENTATION_BOUNDARIES.md` | Module-to-source map and implementation limits | updated 2026-09-07 | Current status, not a requirements replacement |
-| `backend/README.md` | Runtime, backup, dependency, and safety operations | V1.2 | Operational instructions |
+| `docs/IMPLEMENTATION_BOUNDARIES.md` | Module-to-source map and implementation limits | updated 2026-09-08 | Current status plus planned V1.3 scope, not a requirements replacement |
+| `backend/README.md` | Runtime, backup, dependency, and safety operations | V1.2 runtime plus CHG-0017 target notice | Operational commands remain unchanged |
 
 The controlled sources are intentionally not in the repository. Before a change that depends on them, request authorized local access from the project owner and compare the delivered file hashes with this register. If any primary file changes, update the date and SHA-256 here and re-evaluate entries that depend on it.
 
-The above hashes include the 2026-09-07 CHG-0014 enterprise branding and theme addendum and the 2026-09-08 CHG-0015 model/animation addendum. Earlier educational branding and the historical `sus` model statements in the original body are superseded only where those addenda say so, not by a change in review or authorization boundaries.
+The source register is updated by CHG-0019 after the partial V1.3 implementation snapshot. Their leading V1.3 sections override conflicting historical base sections; CHG-0014 enterprise branding and CHG-0015 handsome model addenda still apply where not superseded. Source paths and the supplied asset directory remain controlled local material, not public repository links. No source document being complete implies runtime implementation.
 
 ## 4. Non-negotiable system boundaries
 
 - The current local YOLO model returns only `handsome` candidate boxes. The model-defined class is not an identity or an appearance assessment. It does not identify a person, estimate criminal probability, deduplicate people, track across cameras, or make an enforcement decision. Historical `sus` boxes remain historical records.
 - Person links are manual, permission-checked associations. A retained review is not a confirmed identity or a legal conclusion.
-- Do not send images, camera frames, or internal chat content to a cloud model. Cloud text requires an exact prepared preview and explicit confirmation.
-- Do not add arbitrary model upload, web-managed YOLO weights, threshold edits, automatic vendor fallback, automatic cloud retries, speech, chat attachments, full private-chat audit, or external-network messaging unless requirements are explicitly changed first.
+- Current runtime remains text-only. V1.3 permits explicitly selected images and recordings only through frozen per-turn preview/confirmation; continuous camera feeds and automatic internal-chat disclosure remain forbidden. Speech and multimodal input do not authorize autonomous actions.
+- CHG-0017 authorizes designs for speech, own-detection screenshot sharing and manager-controlled avatar assets. It does not authorize arbitrary file upload, web-managed YOLO weights, threshold edits, automatic vendor fallback/retry, full private-chat audit, voice cloning, lip sync or external-network messaging.
 - Do not place a production database on a network file system. Do not expose development settings to a LAN by changing only the bind address.
 - Do not log passwords, API keys, cookie values, request bodies, private chat bodies, raw URLs with search terms, stack traces, or user input values.
 
@@ -61,7 +62,7 @@ Same-origin FastAPI application
 SQLite + controlled local media + one local YOLO worker path
 ```
 
-- Frontend: native JavaScript ES modules. The architecture design specifies Vue 3, Vite, Vue Router, Pinia, and Element Plus, but those are **not** the current implementation. Do not claim architecture parity.
+- Frontend: native JavaScript ES modules. The historical design specified Vue/Vite, but CHG-0017 adopts the existing native modules as the new target; a framework rewrite is no longer required. This does not imply parity for the other V1.3 features.
 - Backend: Python/FastAPI/SQLAlchemy/Alembic with SQLite. Migrations are in `backend/migrations/versions/` through `20260905_0006_v12.py`.
 - Frontend entry is `index.html` -> `frontend.js` -> `ui/core.js`, `ui/detection.js`, `ui/chat.js`, `ui/assistant.js`, and `ui/admin.js`. Anonymous boot plays two static, sandboxed `/ui/intro/` pages before the login view; authenticated boot does not. Legacy `app.js`, `app-live.js`, and style files remain on disk but are not the served entry path.
 - Current verified development URL is `http://127.0.0.1:8000/`. It deliberately binds to loopback in the documented launch command.
@@ -97,9 +98,21 @@ SQLite + controlled local media + one local YOLO worker path
 2. Login persistence: a persistent server-side cookie does not mean unlimited login. The contract is eight hours absolute and 30 minutes idle; background activity must not renew it forever.
 3. Default administrator: create protected `admin` with `admin123` only when an empty system first initializes. Do not reset existing credentials or overwrite a conflicting account.
 4. Camera and LAN: browser camera on a LAN normally needs trusted HTTPS. A local loopback test is not LAN acceptance.
-5. Avatar: only a deployer-reviewed self-contained GLB is allowed for the 3D path. The present adult-male raster placeholder is not a formal 3D delivery.
+5. Avatar: the current renderer accepts a deployment GLB only. V1.3 designs manager/super-manager import, isolated PMX-to-GLB conversion, validation and atomic activation. The supplied PMX package has noncommercial/no-redistribution notices and is not activated; asset rights are independent of enterprise branding.
 6. AI: structured output and citations reduce unsupported claims but do not prove natural-language accuracy. Human review remains required.
-7. Architecture: implementation extensions and deviations must be documented. Native ES modules are a material current deviation from the Vue/Vite target.
+7. Architecture: implementation extensions and deviations must be documented. CHG-0017 resolves the old Vue/Vite discrepancy at design level by retaining native modules; code remains V1.2.
+
+### 6.1 Current V1.3 target, not implemented
+
+- Scope: user-requested functional documentation only; no coursework submission artifacts or acceptance-evidence work. Current operational commands still target the original data paths and opaque-session code.
+- Auth: signed JWT in HttpOnly customs_access Cookie, independent signing key, server-side sid/auth_version revocation, CSRF retained, one active login per account. Eight-hour absolute and thirty-minute idle limits remain; no refresh token or indefinite renewal.
+- Providers: manager-only encrypted connection configuration, asynchronous vendor-specific model discovery and autofill, separate per-model capability observations, explicit tests and enablement. Ordinary users select published bindings, not shared credentials.
+- Assistant: selected image/text VISION, per-turn PIPELINE ASR/text/TTS and native OMNI, frozen disclosure scope, per-stage billing/idempotency, playback state without lip sync, generation-based reset and bounded audio retention.
+- Avatar: managers and super-managers upload/validate/preview/activate/rollback controlled assets. Supplied PMX is the preferred candidate, not an installed GLB; no rights to commercial use or redistribution are inferred.
+- Data: planned database/customs_training.db, results/ categories, physical detect_log table; preserve record IDs, credentials, media and snapshots. Explicit initialization/migration, no silent recreation of a missing database. No data has moved in this change.
+- Remaining functional targets: own-result screenshot messages, type filtering, member join/leave events, immediate logout notifications, read/received separation, scoped dashboard metrics, business logs and frame-bound display smoothing.
+- Corrections: ui/detection.js still hardcodes sus for camera output despite CHG-0015's completeness wording. Do not rewrite old observations; carry this as pending implementation.
+- Primary sections: PRD V13-00 through V13-09; API C13-00 through C13-09; architecture A13-01 through A13-09; AI AI13-01 through AI13-10. API enums/fields take precedence over prose examples.
 
 ## 7. Safe local operations
 
@@ -274,7 +287,21 @@ Do not change `APP_SECRET_KEY` in an existing installation without a backup and 
 - Remaining risks, external dependencies, and follow-up IDs: force-push changed every commit ID after `351595b`; any other clone of the old history must re-clone or hard-reset. GitHub cached views of removed content may persist briefly.
 - Chinese counterpart: `docs/DEVELOPMENT_HISTORY_ZH.md#chg-0016`
 
-## 9. Open work register
+<a id="chg-0017"></a>
+### CHG-0017 - V1.3 functional contract revision, documentation only
+
+- Status: COMPLETED on 2026-09-08 (documentation only)
+- Date: 2026-09-08
+- Request/problem: update project documents only for the task brief and the user's explicit scope: JWT, model discovery/autofill, speech and multimodal providers, manager-controlled avatar replacement, aligned database/results paths, and remaining functional gaps. Submission materials and acceptance-evidence work are excluded.
+- Requirement references: explicit user request on 2026-09-08; supplied task brief functional sections on pages 1-5; controlled PRD, API, architecture and AI design, with CHG-0014/CHG-0015 addenda.
+- Facts and cause: current code uses opaque sessions, text-only assistant/chat, deployment-only GLB, backend/data and backend/media. Supplied avatar files are PMX 2.0 with textures and noncommercial/no-redistribution notices, not ready-to-load GLB. The approved model is handsome, but ui/detection.js still hardcodes sus for camera labels, correcting the completeness claim in CHG-0015.
+- Ordered work: read handbooks and current callers/routes/schemas/storage; match all four baseline fingerprints; inspect supplied asset headers and notices without executing embedded content; check official vendor catalog, Qwen-Omni and JWT documentation; add leading authoritative V1.3 sections with explicit historical supersession to all four designs; align native frontend, API/data/security boundaries, README and status records; check links, tables, identifiers and updated fingerprints.
+- Affected files and effects: four controlled design documents, readme.md, backend/README.md and four maintenance documents. Future API/data/security changes are specifications only; no runtime, account, database, secret, asset, Git publication or cloud inference mutation is authorized in this turn.
+- Verification: initial document checker found two unescaped table separators in new API rows; both were corrected. Initial source inspection used one nonexistent backend/app/web/ui path, then resolved the real ui/detection.js caller. The first DeepSeek documentation fetch timed out and a guessed Qwen catalog URL failed; official search resolved the documented catalog pages, which are the final citations. Final checker passed: 10 associated documents, 27 local links, 17 matching ledger IDs, four updated controlled-source hashes, no table/fence/anchor issue, English handbook ASCII, documentation-only changed paths, and git diff --check. No business tests, cloud inference or acceptance work was run.
+- Rollback: controlled backup /tmp/customs-docs-v13.3NnOip/before-contract-edit.tar contains the ten documents before contract edits, with the new IN_PROGRESS ledger already present. Restore only intended design/prose edits and add a later correction record; do not erase historical ledger entries or restore runtime data. The backup includes private source material and must not be published.
+- Remaining: implementation remains pending; asset activation is conditional on format preparation and permitted use. No commercial or redistribution permission is inferred.
+- Chinese counterpart: [CHG-0017](DEVELOPMENT_HISTORY_ZH.md#chg-0017).
+
 ### CHG-0014 - Theme selection and enterprise demo branding
 
 - Status: COMPLETED
@@ -290,9 +317,43 @@ Do not change `APP_SECRET_KEY` in an existing installation without a backup and 
 - Rollback: revert only CHG-0014 edits; no data restoration needed. Chinese counterpart: docs/DEVELOPMENT_HISTORY_ZH.md.
 
 
+## 9. Open work register
+
+Historical acceptance items below are retained for continuity, not added to the current user's documentation-only scope. CHG-0017 creates target contracts; future implementation needs a separate change entry.
+
+<a id="chg-0018"></a>
+### CHG-0018 - Migrate selected fixes from user-supplied modified archive
+
+- Status: COMPLETED
+- Date: 2026-09-08
+- Request/problem: inspect the user-supplied Customs-Suspect-Identification-System-main.zip, migrate its applicable modifications into this original workspace, and summarize all archive changes.
+- Requirement references: explicit user request on 2026-09-08; AGENTS.md read-before-change and change-ledger rules; current session/authentication, LLM and cross-platform startup boundaries.
+- Facts, hypotheses, and exclusions: archive SHA-256 is 6cb3ae84eb91f3d3a86554b8114bbe258308d02e326d53929df7e76ec99ff4dc. It contains 227 entries including a SQLite database, application log and Python bytecode caches, which are generated/private runtime state rather than source changes. Source comparison found changed auth, middleware, LLM, admin UI, core UI, SQLite baseline, documentation and a new Windows start script. The archive has no primary controlled V1.3 documents. Its docs are older than the current CHG-0017 revisions.
+- Reasoned selection: evaluate each source difference against current contracts. Candidate fixes are logout response handling, middleware null-status resilience, Qwen thinking control, and a Windows launcher. Do not blindly migrate the SQLite minimum-version downgrade, removal of visible request IDs, generated state, or older docs. The archive middleware fix itself leaves later raw status comparisons, so correct the full path rather than copying a partial change.
+- Work performed, in order: compared source rather than executing archive content; changed logout to retain its declared 204 empty response while clearing the session cookie; made all request-log and audit comparisons use a safe derived status code; added `enable_thinking: false` to non-streaming `qwen3*` payloads to match the established streaming path; added `backend/start.bat`, which prefers the local virtual environment and invokes `app.main` on loopback; added isolated regressions for logout and the Qwen payload. The first test insertion interrupted a predecessor test cleanup block; static inspection exposed the dangling indentation and it was corrected before test execution.
+- Affected files/effects: auth, middleware, LLM payload, isolated tests, Windows local launcher and operational documentation. No route, role, data schema, SQLite baseline, archive database, log, cache, model, credential, account, source media or controlled design document was imported or changed.
+- Verification: targeted auth/health tests passed 5 tests with 2 upstream dependency deprecation warnings. Full final suite passed 42 tests with 2 such warnings; frontend `npm run check` passed all 5 checks; Python compilation and `git diff --check` passed. Tests used isolated databases. No cloud request, production-database mutation, service publication or Windows runtime test was performed; the launcher received static review only.
+- Rollback: revert only selected CHG-0018 files; remove a newly added launcher if needed. Do not restore archive runtime database/log/cache files.
+- Chinese counterpart: [CHG-0018](DEVELOPMENT_HISTORY_ZH.md#chg-0018).
+
+<a id="chg-0019"></a>
+### CHG-0019 - Implement V1.3 foundation and repair identified runtime gaps
+
+- Status: COMPLETED (partial V1.3 foundation)
+- Date: 2026-09-08
+- Request/problem: implement the revised project documents, add missing functionality, repair known defects, and replace the authentication method.
+- Requirement references: PRD V13-01 through V13-08; API C13-00 through C13-09; architecture A13-01 through A13-09; AI design AI13-01 through AI13-10; explicit user request on 2026-09-08.
+- Facts and scope control: current code remains V1.2 with opaque cookie sessions, `backend/data` and `backend/media`, text-only assistant flows, and a GLB deployment reader. The target is a breaking JWT/data-root/multimodal/asset-management contract. It cannot be safely fulfilled by recreating an existing database or by copying the unlicensed PMX source into the repository. Work starts with inspectable migration-compatible foundations and existing defects; cloud calls, asset activation and production-data migration remain excluded unless separately safe and testable.
+- Work performed, in order: added migration 20260908_0007 with User/AuthSession auth-version fields and revocation of all legacy opaque sessions; replaced the V1.2 identity cookie with a locally signed HS256 JWT in HttpOnly customs_access, using a distinct signing key and claims for issuer, audience, sub, sid, jti, times, auth version and phase; kept every request and WebSocket subject to current session, user state and auth-version validation; made successful new login revoke older account sessions; made password, role, permission, status, delete and reset changes increment auth version and revoke old sessions; separated anonymous CSRF context from the access JWT; cleared stale/revoked browser tokens before a re-login; changed default paths to database/ and results/, added an explicit initializer, and prevented normal startup from seeding a missing database; repaired camera output to render returned class_name rather than hardcoded sus.
+- Deferred scope: model catalog/discovery and form autofill, VISION/ASR/TTS/OMNI, screenshot chat attachments, avatar asset lifecycle/PMX conversion, detect_log physical migration, and actual old-root data/media migration remain unimplemented. They require separate data models, provider protocol adapters, controlled conversion, license confirmation, and a maintenance window. No placeholder route claims these abilities work.
+- Verification: targeted auth suite passed 3 tests; full backend suite passed 43 tests with 2 upstream dependency deprecation warnings; frontend npm run check passed 5 checks; changed Python files compiled and git diff --check passed. Tests used isolated SQLite/media roots. No cloud provider, camera hardware, PMX asset, production database, LAN service, or Windows runtime was used.
+- Security/data boundaries: no password reset, existing encryption-key rotation, service publication, paid provider call, PMX import, or production data migration was performed. Old browser sessions are intentionally revoked by the migration; accounts, password hashes, provider secrets and business records are preserved.
+- Rollback: restore a verified database backup for the non-downgradable authentication migration, then revert only the listed application/config/UI/docs changes. Do not restore V1.2 browser tokens or copy archive/runtime data over the current database.
+- Chinese counterpart: [CHG-0019](DEVELOPMENT_HISTORY_ZH.md#chg-0019).
+
 | ID | Status | Work | Required evidence before closure |
 | --- | --- | --- | --- |
-| OPEN-001 | OPEN | Vue 3/Vite migration or explicit architecture revision | Approved plan, route/state/component migration, regression tests |
+| OPEN-001 | SUPERSEDED by CHG-0017 | V1.3 architecture retains native ES modules | Documentation alignment only; no framework migration was performed |
 | OPEN-002 | OPEN | Real cloud provider and structured output acceptance | User-approved credentials/budget, isolated evidence, no secret disclosure |
 | OPEN-003 | OPEN | Formal self-contained GLB and GPU acceptance | Licensed asset, budget validation, renderer/fallback tests on target device |
 | OPEN-004 | OPEN | Physical camera and LAN HTTPS acceptance | Permission, disconnect/reconnect, device switch, trusted HTTPS, multi-device tests |
@@ -300,6 +361,7 @@ Do not change `APP_SECRET_KEY` in an existing installation without a backup and 
 | OPEN-006 | OPEN | Concurrency, restart, fault, Windows, and long-run testing | Defined scenarios and dated results |
 | OPEN-007 | OPEN | Provider test global quota/concurrency hardening and DNS connection pinning | Threat model and concurrency/security tests |
 | OPEN-008 | OPEN | Assistant source/history pagination and UI edge cases | UX decision and integration tests |
+| OPEN-009 | PLANNED, NOT IMPLEMENTED | V1.3 JWT, model discovery, multimodal/speech, avatar management, storage migration and functional gaps | Explicit implementation work after this documentation-only change |
 
 ## 10. Entry template for future changes
 

@@ -56,6 +56,7 @@ class User(Base):
     is_builtin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     must_change_password: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     permissions: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    auth_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -78,6 +79,7 @@ class AuthSession(Base):
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     presence_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    auth_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     user: Mapped[User | None] = relationship(back_populates="sessions")
 
 

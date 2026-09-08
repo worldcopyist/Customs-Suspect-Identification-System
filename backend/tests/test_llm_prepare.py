@@ -1,4 +1,6 @@
+import asyncio
 from pathlib import Path
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
@@ -9,6 +11,7 @@ from app.main import create_app
 from app.models import LlmSettings, ProviderConfig
 from app.models.extension import AgentProfile
 from app.services.llm import encrypt_secret, secret_fingerprint, validation_fingerprint
+from app.services import llm
 
 
 ORIGIN = "http://127.0.0.1:8000"
@@ -78,3 +81,44 @@ def test_prepare_previews_text_without_calling_cloud(tmp_path: Path) -> None:
         db_session.SessionLocal.configure(bind=old_bind)
         get_settings().database_url = old_url
         engine.dispose()
+
+
+def test_non_stream_qwen3_disables_thinking(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """The non-streaming request must match the existing Qwen3 stream setting."""
+    captured: dict = {}
+
+    class DummyResponse:
+        status_code = 200
+        headers = {"x-request-id": "local-test-request"}
+
+        @staticmethod
+        def json() -> dict:
+            return {"choices": [{"message": {"content": "安全答复"}, "finish_reason": "stop"}]}
+
+    class DummyClient:
+        def __init__(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+            pass
+
+        async def __aenter__(self):  # type: ignore[no-untyped-def]
+            return self
+
+        async def __aexit__(self, *args) -> None:  # type: ignore[no-untyped-def]
+            return None
+
+        async def post(self, _endpoint: str, **kwargs):  # type: ignore[no-untyped-def]
+            captured.update(kwargs)
+            return DummyResponse()
+
+    monkeypatch.setattr(llm, "verify_public_dns", lambda _url: None)
+    monkeypatch.setattr(llm, "decrypt_secret", lambda _value: "test-key")
+    monkeypatch.setattr(llm.httpx, "AsyncClient", DummyClient)
+    config = SimpleNamespace(
+        provider="QWEN", base_url="https://dashscope.aliyuncs.com", model="qwen3-test",
+        api_key_encrypted="ciphertext", max_output_tokens=64, temperature=0.7,
+        timeout_seconds=2, capabilities={"supports_stream": False},
+    )
+
+    result = asyncio.run(llm.provider_generate(config, [{"role": "user", "content": "测试"}]))
+
+    assert result["text"] == "安全答复"
+    assert captured["json"]["enable_thinking"] is False

@@ -245,6 +245,7 @@ async def provider_generate(config: ProviderConfig, messages: list[dict], on_del
     payload = {"model": config.model, "messages": messages, "stream": False, "max_tokens": config.max_output_tokens}
     if config.temperature is not None:payload["temperature"]=config.temperature
     if config.provider=="DEEPSEEK":payload["thinking"]={"type":"disabled"}
+    elif config.model.startswith("qwen3"):payload["enable_thinking"]=False
     timeout = httpx.Timeout(timeout=config.timeout_seconds, connect=10)
     try:
         async with asyncio.timeout(60), httpx.AsyncClient(timeout=timeout, follow_redirects=False,trust_env=False) as client:

@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.errors import api_error_handler, unhandled_error_handler, validation_error_handler
-from app.services.security import ApiError, now, validate_session
+from app.services.security import ApiError, now, session_from_access_token, validate_session
 from app.core.lifecycle import lifespan
 from app.core.logging import configure_logging
 from app.api.events import event_hub, send_event
@@ -29,13 +29,8 @@ def websocket_user(raw_cookie: str | None) -> str | None:
     """Validate the current server-side session without trusting client data."""
     if not raw_cookie:
         return None
-    from sqlalchemy import select
-    from app.services.security import secret_hash
-
     with SessionLocal() as db:
-        session = db.scalar(select(AuthSession).where(AuthSession.token_hash == secret_hash(raw_cookie)))
-        if session is None:
-            return None
+        session = session_from_access_token(raw_cookie, db)
         user = validate_session(session, require_full=True)
         if user is None:
             return None
@@ -62,21 +57,25 @@ def create_app() -> FastAPI:
             logger.error("request_failed request_id=%s method=%s", request.state.request_id, request.method)
             raise
         safe_route=getattr(request.scope.get("route"),"path","unmatched")
-        logger.info("request request_id=%s method=%s route=%s status=%s duration_ms=%s", request.state.request_id, request.method, safe_route, response.status_code, round((time.perf_counter() - started) * 1000, 1))
+        # An injected response skeleton may not have a status code until
+        # FastAPI constructs the declared response. Keep diagnostics and the
+        # audit path resilient; normal HTTP responses always carry a code.
+        status_code=response.status_code or 0
+        logger.info("request request_id=%s method=%s route=%s status=%s duration_ms=%s", request.state.request_id, request.method, safe_route, status_code, round((time.perf_counter() - started) * 1000, 1))
         response.headers["X-Request-ID"] = request.state.request_id
         response.headers["X-Content-Type-Options"]="nosniff"
         response.headers["Referrer-Policy"]="same-origin"
         frame_ancestors = "'self'" if request.url.path.startswith("/ui/intro/") else "'none'"
         response.headers["Content-Security-Policy"]=f"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; media-src 'self' blob:; frame-src 'self'; object-src 'none'; frame-ancestors {frame_ancestors}"
         response.headers["Cache-Control"]="private,no-store"
-        if request.url.path.startswith("/api/v1/") and (response.status_code>=400 or request.method not in {"GET","HEAD","OPTIONS"}):
+        if request.url.path.startswith("/api/v1/") and (status_code>=400 or request.method not in {"GET","HEAD","OPTIONS"}):
             from app.models.extension import OperationLog
             route=getattr(request.scope.get("route"),"path","unknown")
             try:
                 with SessionLocal.begin() as log_db:
                     segments=route.strip('/').split('/')
                     if segments[:2]==['api','v1']:segments=segments[2:]
-                    log_db.add(OperationLog(level="ERROR" if response.status_code>=500 else "WARN" if response.status_code>=400 else "INFO",module=segments[0] if segments else "api",event_code="HTTP_ERROR" if response.status_code>=400 else "WRITE_COMPLETED",request_id=request.state.request_id,safe_context={"route":route,"method":request.method,"status":response.status_code,"duration_ms":round((time.perf_counter()-started)*1000)}))
+                    log_db.add(OperationLog(level="ERROR" if status_code>=500 else "WARN" if status_code>=400 else "INFO",module=segments[0] if segments else "api",event_code="HTTP_ERROR" if status_code>=400 else "WRITE_COMPLETED",request_id=request.state.request_id,safe_context={"route":route,"method":request.method,"status":status_code,"duration_ms":round((time.perf_counter()-started)*1000)}))
             except Exception:logger.error("operation_log_persist_failed request_id=%s",request.state.request_id)
         # 登录入口必须始终使用最新脚本，避免浏览器将旧的受限会话页面留在缓存中。
         if request.url.path in {"/", "/index.html", "/app.js", "/styles.css", "/auth-background.css"}:
@@ -96,7 +95,7 @@ def create_app() -> FastAPI:
             await websocket.close(code=1008)
             return
         try:
-            user_id = await anyio.to_thread.run_sync(websocket_user, websocket.cookies.get("customs_session"))
+            user_id = await anyio.to_thread.run_sync(websocket_user, websocket.cookies.get("customs_access"))
         except ApiError:
             await websocket.close(code=1008)
             return
@@ -142,7 +141,7 @@ def create_app() -> FastAPI:
                 # Revalidate after every application interaction / heartbeat so
                 # status and permission revocations cannot linger in a socket.
                 try:
-                    current = await anyio.to_thread.run_sync(websocket_user, websocket.cookies.get("customs_session"))
+                    current = await anyio.to_thread.run_sync(websocket_user, websocket.cookies.get("customs_access"))
                 except ApiError:
                     current = None
                 if current != user_id:
@@ -172,3 +171,11 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    # Enables the Windows launcher and local development from backend/.
+    import uvicorn
+
+    settings = get_settings()
+    uvicorn.run(app, host="127.0.0.1", port=settings.app_port, access_log=False)
